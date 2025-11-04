@@ -1,6 +1,9 @@
 import os
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from langgraph.prebuilt import create_react_agent
+
+from tools import ls_tool
 
 load_dotenv()
 
@@ -23,8 +26,12 @@ def main():
         base_url="https://api.deepseek.com",
         temperature=0,
     )
-    print("模型初始化成功")
-    print()
+    print("模型初始化成功! \n")
+
+    # 工具列表
+    tools = [ls_tool]
+    agent = create_react_agent(model, tools) # 创建一个ReAct Agent
+    print(f"工具初始化成功! \n")
 
     # 对话循环
     print("输入 [quit] 或 [exit] , 结束对话")
@@ -46,9 +53,18 @@ def main():
         try:
             print("\nAgent: ", end="", flush=True)
             
-            # 流式输出
-            for chunk in model.stream(user_input):
-                print(chunk.content, end="", flush=True)
+            # # 流式输出
+            # for chunk in model.stream(user_input):
+            #     print(chunk.content, end="", flush=True)
+            
+            # 使用非流式方便调试
+            response = agent.invoke({"messages": [{"role": "user", "content": user_input}]}) 
+            # 提取 messages
+            messages = response.get("messages", [])
+            if messages:
+                # TODO: 提取 tool_call 等信息展示思考过程
+                last_message = messages[-1] # tool_call也包含在messages中，只有最后一条信息才是最终AI的回复
+                print(f"\rAgent: {last_message.content}")
             
             print("\n")  # 换行
         except Exception as e:
