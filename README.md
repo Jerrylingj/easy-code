@@ -1,13 +1,15 @@
 # easy-code
 
-1. 创建虚拟环境
+## 安装
+
+使用 [uv](https://docs.astral.sh/uv/) 管理依赖：
 
 ```bash
-python -m venv venv
+uv sync
 ```
 
-2. 安装依赖
+## 运行
 
 ```bash
-pip install -r requirements.txt
+uv run python src/main.py
 ```
